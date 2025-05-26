@@ -1,6 +1,7 @@
 using HarmonyLib;
 using ResoniteModLoader;
 using UnityFrooxEngineRunner;
+using FrooxEngine;
 
 namespace DisableSRAnipal;
 
@@ -20,9 +21,30 @@ public partial class DisableSRAnipal : ResoniteMod {
 		Config.Save(true);
 
 		Harmony harmony = new("net.deltawolf.DisableSRAnipal");
-		harmony.PatchAll();
+
+		TryPatchIfTypeExists(harmony, "UnityLaunchOptions", "LaunchOptions");
+		TryPatchIfTypeExists(harmony, "ViveProEyeTrackingDriver", "ProEyeTracking");
 	}
 
+    private void TryPatchIfTypeExists(Harmony harmony, string typeName, string patchCategory)
+    {
+		// typeof が使える場合はこちら（グローバル型想定）
+		try {
+			// 例外が出ればその型は存在しないとみなす
+			System.Type t = System.Type.GetType(typeName);
+			if (t != null) {
+				harmony.PatchCategory(patchCategory);
+			}
+			Msg($"Type '{typeName}' not found, skipping patching for {patchCategory}.");
+
+		}
+		catch {
+			// Harmony が null MethodBase にパッチしないように保険
+			Warn($"E when patching for {patchCategory}, threw warning: Type '{typeName}' does not exist.");
+		}
+    }
+
+	[HarmonyPatchCategory("LaunchOptions")]
 	[HarmonyPatch(typeof(UnityLaunchOptions), "ForceSRAnipal", MethodType.Getter)]
 	private class UnityLaunchOptionsForceSRAnipalPatch {
 		public static bool Prefix(ref bool __result) {
@@ -33,6 +55,8 @@ public partial class DisableSRAnipal : ResoniteMod {
 			return true;
 		}
 	}
+
+	[HarmonyPatchCategory("ProEyeTracking")]
 
 	[HarmonyPatch(typeof(ViveProEyeTrackingDriver), "ShouldRegister", MethodType.Getter)]
 	private class ViveProEyeTrackingDriverShouldRegisterPatch {
