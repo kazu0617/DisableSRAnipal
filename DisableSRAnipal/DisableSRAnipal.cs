@@ -7,9 +7,9 @@ namespace DisableSRAnipal;
 
 public partial class DisableSRAnipal : ResoniteMod {
 	public override string Name => "DisableSRAnipal";
-	public override string Author => "Delta";
-	public override string Version => "1.0.0";
-	public override string Link => "https://github.com/XDelta/DisableSRAnipal";
+	public override string Author => "Delta + kazu";
+	public override string Version => "1.0.1";
+	public override string Link => "https://github.com/kazu0617/DisableSRAnipal";
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<bool> Enabled = new("Enabled", "Should SRAnipal setup be enabled (restart required)", () => true);
